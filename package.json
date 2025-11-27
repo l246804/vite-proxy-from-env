@@ -1,0 +1,70 @@
+{
+  "name": "vite-proxy-from-env",
+  "type": "module",
+  "version": "0.0.0",
+  "packageManager": "pnpm@10.23.0",
+  "description": "根据 `.env` 文件内的变量获取 Vite 服务代理配置。",
+  "author": "leihaohao <https://github.com/l246804>",
+  "license": "MIT",
+  "homepage": "https://github.com/l246804/vite-proxy-from-env#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/l246804/vite-proxy-from-env.git"
+  },
+  "bugs": {
+    "url": "https://github.com/l246804/vite-proxy-from-env/issues"
+  },
+  "keywords": [
+    "vite",
+    "proxy",
+    "env"
+  ],
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "scripts": {
+    "dev": "tsdown --watch",
+    "build": "tsdown",
+    "test": "vitest",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier . --write --cache --cache-location ./node_modules/.cache/.prettier-cache",
+    "lint": "eslint . --cache --cache-location ./node_modules/.cache/.eslint-cache",
+    "lint:fix": "pnpm run lint --fix",
+    "release": "bumpp && pnpm publish",
+    "prepublishOnly": "pnpm run build",
+    "prepare": "simple-git-hooks"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^6.2.0",
+    "@sxzz/prettier-config": "^2.2.5",
+    "@tsconfig/node22": "^22.0.5",
+    "@types/node": "^24.10.1",
+    "@vue/tsconfig": "^0.8.1",
+    "bumpp": "^10.3.1",
+    "eslint": "^9.39.1",
+    "eslint-plugin-format": "^1.0.2",
+    "happy-dom": "^20.0.10",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.6.2",
+    "simple-git-hooks": "^2.13.1",
+    "tsdown": "^0.16.7",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.4",
+    "vitest": "^3.2.4"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "npx lint-staged"
+  }
+}
