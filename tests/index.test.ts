@@ -1,6 +1,74 @@
-import { expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { createProxyTransformer } from '../src'
 
-it('createProxyTransformer', () => {
-  createProxyTransformer()
+describe('createProxyTransformer', () => {
+  it('parses http proxy and creates rewrite function', () => {
+    const tr = createProxyTransformer()
+    const env = '[[\'/api\',\'http://localhost:3000\',\'/backend\']]'
+    const proxies = tr(env)
+    expect(proxies).toHaveProperty('/api')
+    const p: any = proxies['/api']
+    expect(p.target).toBe('http://localhost:3000')
+    expect(p.changeOrigin).toBe(true)
+    expect(p.ws).toBe(true)
+    // http target should not force secure flag
+    expect(p).not.toHaveProperty('secure')
+    // rewrite should transform path as expected
+    expect(typeof p.rewrite).toBe('function')
+    expect(p.rewrite('/api/users')).toBe('/backend/users')
+  })
+
+  it('parses https proxy and sets secure=false by default', () => {
+    const tr = createProxyTransformer()
+    const env = '[[\'/secure\',\'https://example.com\']]'
+    const proxies = tr(env)
+    expect(proxies).toHaveProperty('/secure')
+    const p: any = proxies['/secure']
+    expect(p.target).toBe('https://example.com')
+    expect(p.secure).toBe(false)
+  })
+
+  it('returns empty object and logs on invalid envString', () => {
+    const tr = createProxyTransformer()
+    const bad = 'this is invalid javascript and will throw'
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {
+    })
+    const proxies = tr(bad)
+    expect(proxies).toEqual({})
+    expect(errSpy).toHaveBeenCalled()
+    errSpy.mockRestore()
+  })
+
+  it('applies baseProxyOptions and allows per-item overrides', () => {
+    const tr = createProxyTransformer({
+      baseProxyOptions: { changeOrigin: false },
+    })
+    const env = '[[\'/api\',\'http://localhost:3000\',undefined,{ ws: false }]]'
+    const proxies = tr(env)
+    expect(proxies).toHaveProperty('/api')
+    const p: any = proxies['/api']
+    // baseProxyOptions should set changeOrigin to false
+    expect(p.changeOrigin).toBe(false)
+    // per-item options should override base
+    expect(p.ws).toBe(false)
+  })
+
+  it('returns empty object and logs when the evaluated value is not an array', () => {
+    const tr = createProxyTransformer()
+    const env = '123'
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {
+    })
+    const proxies = tr(env)
+    expect(proxies).toEqual({})
+    expect(errSpy).toHaveBeenCalled()
+    errSpy.mockRestore()
+  })
+
+  it('produces undefined rewrite when none provided', () => {
+    const tr = createProxyTransformer()
+    const env = '[[\'/norw\',\'http://localhost:3000\'] ]'
+    const proxies = tr(env)
+    const p: any = proxies['/norw']
+    expect(p.rewrite).toBeUndefined()
+  })
 })
