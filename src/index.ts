@@ -88,7 +88,7 @@ export function createProxyTransformer(
       return proxies
     }
     catch (e: any) {
-      console.error(`[vite-proxy-from-env] ${e}`)
+      console.error(`[vite-proxy-from-env] parse proxy string error: ${e}`)
       return {}
     }
   }
