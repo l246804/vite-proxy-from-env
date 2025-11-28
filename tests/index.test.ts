@@ -71,4 +71,25 @@ describe('createProxyTransformer', () => {
     const p: any = proxies['/norw']
     expect(p.rewrite).toBeUndefined()
   })
+
+  it('returns empty object for empty string', () => {
+    const tr = createProxyTransformer()
+    expect(tr('')).toEqual({})
+    expect(tr('   ')).toEqual({})
+    expect(tr('\n\t')).toEqual({})
+  })
+
+  it('supports regex pattern in prefix', () => {
+    const tr = createProxyTransformer()
+    // prefix with regex alternation pattern (longer patterns first for correct matching)
+    const env = '[[\'/(api-v2|api)\',\'http://localhost:3000\',\'\']]'
+    const proxies = tr(env)
+    const p: any = proxies['/(api-v2|api)']
+    // should match /api
+    expect(p.rewrite('/api/users')).toBe('/users')
+    // should match /api-v2
+    expect(p.rewrite('/api-v2/users')).toBe('/users')
+    // should not match /other
+    expect(p.rewrite('/other/users')).toBe('/other/users')
+  })
 })

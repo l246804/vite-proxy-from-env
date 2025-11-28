@@ -42,6 +42,10 @@ export function createProxyTransformer(
   options: CreateProxyTransformerOptions = {},
 ): ProxyTransformer {
   return (envString): ViteProxy => {
+    if (!envString || !envString.trim()) {
+      return {}
+    }
+
     try {
       // 将传入的 envString 作为数组字面量执行并返回 ProxyList
       // envString 预期为数组字面量，例如：
@@ -87,8 +91,13 @@ export function createProxyTransformer(
 
       return proxies
     }
-    catch (e: any) {
-      console.error(`[vite-proxy-from-env] parse proxy string error: ${e}`)
+    catch (e: unknown) {
+      const message = e instanceof Error ? e.message : String(e)
+      console.error(
+        `[vite-proxy-from-env] Failed to parse proxy string.\n` +
+        `  Input: ${envString}\n` +
+        `  Error: ${message}`,
+      )
       return {}
     }
   }
