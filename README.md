@@ -47,6 +47,27 @@ export default defineConfig(({ mode }) => {
 })
 ```
 
+### 直接传递数组
+
+除了解析环境变量字符串外，转换器也支持直接传递 `ProxyList` 数组，适用于在代码中直接配置代理的场景：
+
+```ts
+import type { ProxyList } from 'vite-proxy-from-env'
+import { defineConfig } from 'vite'
+import { proxyTransformer } from 'vite-proxy-from-env'
+
+const proxyList: ProxyList = [
+  ['/api', 'http://localhost:3000', ''],
+  ['/upload', 'http://localhost:4000'],
+]
+
+export default defineConfig({
+  server: {
+    proxy: proxyTransformer(proxyList),
+  },
+})
+```
+
 ### 多环境代理配置
 
 在团队协作开发中，不同开发者可能需要连接不同的后端环境（如测试环境、预发环境、本地服务等）。推荐在 `.env.development.local` 文件中通过注释保存多套代理配置，按需切换使用：

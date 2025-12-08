@@ -1,3 +1,4 @@
+import type { ProxyList } from '../src'
 import { describe, expect, it, vi } from 'vitest'
 import { createProxyTransformer } from '../src'
 
@@ -91,5 +92,66 @@ describe('createProxyTransformer', () => {
     expect(p.rewrite('/api-v2/users')).toBe('/users')
     // should not match /other
     expect(p.rewrite('/other/users')).toBe('/other/users')
+  })
+
+  it('accepts ProxyList array directly', () => {
+    const tr = createProxyTransformer()
+    const list: ProxyList = [['/api', 'http://localhost:3000', '/backend']]
+    const proxies = tr(list)
+    expect(proxies).toHaveProperty('/api')
+    const p: any = proxies['/api']
+    expect(p.target).toBe('http://localhost:3000')
+    expect(p.changeOrigin).toBe(true)
+    expect(p.ws).toBe(true)
+    expect(typeof p.rewrite).toBe('function')
+    expect(p.rewrite('/api/users')).toBe('/backend/users')
+  })
+
+  it('accepts ProxyList array with https target', () => {
+    const tr = createProxyTransformer()
+    const list: ProxyList = [['/secure', 'https://example.com']]
+    const proxies = tr(list)
+    expect(proxies).toHaveProperty('/secure')
+    const p: any = proxies['/secure']
+    expect(p.target).toBe('https://example.com')
+    expect(p.secure).toBe(false)
+  })
+
+  it('accepts ProxyList array with custom options', () => {
+    const tr = createProxyTransformer({
+      baseProxyOptions: { changeOrigin: false },
+    })
+    const list: ProxyList = [
+      ['/api', 'http://localhost:3000', undefined, { ws: false }],
+    ]
+    const proxies = tr(list)
+    expect(proxies).toHaveProperty('/api')
+    const p: any = proxies['/api']
+    expect(p.changeOrigin).toBe(false)
+    expect(p.ws).toBe(false)
+  })
+
+  it('accepts empty ProxyList array', () => {
+    const tr = createProxyTransformer()
+    const list: ProxyList = []
+    const proxies = tr(list)
+    expect(proxies).toEqual({})
+  })
+
+  it('accepts ProxyList array with multiple proxies', () => {
+    const tr = createProxyTransformer()
+    const list: ProxyList = [
+      ['/api', 'http://localhost:3000', ''],
+      ['/upload', 'http://localhost:4000'],
+    ]
+    const proxies = tr(list)
+    expect(proxies).toHaveProperty('/api')
+    expect(proxies).toHaveProperty('/upload')
+    const apiProxy: any = proxies['/api']
+    const uploadProxy: any = proxies['/upload']
+    expect(apiProxy.target).toBe('http://localhost:3000')
+    expect(uploadProxy.target).toBe('http://localhost:4000')
+    expect(typeof apiProxy.rewrite).toBe('function')
+    expect(uploadProxy.rewrite).toBeUndefined()
   })
 })
