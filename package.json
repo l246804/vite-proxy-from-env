@@ -46,7 +46,7 @@
     "prepare": "simple-git-hooks"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^6.2.0",
+    "@antfu/eslint-config": "^10.0.0",
     "@sxzz/prettier-config": "^2.2.5",
     "@tsconfig/node24": "^24.0.0",
     "@types/node": "^26.0.0",
